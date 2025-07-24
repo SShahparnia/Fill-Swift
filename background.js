@@ -1,3 +1,6 @@
+// Background script for Auto-Fill Assistant
+// Handles installation, context menus, and background tasks
+
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") {
     console.log("Auto-Fill Assistant installed");
@@ -32,10 +35,8 @@ chrome.runtime.onInstalled.addListener((details) => {
       "Click the extension icon to configure your information and start auto-filling forms."
     );
   }
-});
 
-// Create context menu for auto-fill
-chrome.runtime.onInstalled.addListener(() => {
+  // Create context menu (moved inside the same listener)
   chrome.contextMenus.create({
     id: "autoFillPage",
     title: "Auto-fill this page",
