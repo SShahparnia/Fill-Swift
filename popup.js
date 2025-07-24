@@ -95,6 +95,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         throw new Error("First name, last name, and email are required");
       }
 
+      // Handle resume file
+      const resumeFile = document.getElementById("resumeFile").files[0];
+      if (resumeFile) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          personalInfo.resumeData = e.target.result;
+          personalInfo.resumeFileName = resumeFile.name;
+          personalInfo.resumeType = resumeFile.type;
+        };
+        reader.readAsDataURL(resumeFile);
+      }
       // Save to storage
       await chrome.storage.local.set({ personalInfo });
 
@@ -407,7 +418,36 @@ function fillFormFields(personalInfo) {
       },
     },
   ];
+  // Handle file uploads (resume)
+  if (personalInfo.resumeData && personalInfo.resumeFileName) {
+    const fileInputs = document.querySelectorAll(
+      'input[type="file"]',
+      'input[name*="resume" i]',
+      'input[name*="cv" i]'
+    );
 
+    fileInputs.forEach((input) => {
+      if (input.accept.includes(".pdf") || input.accept.includes(".doc")) {
+        // Create file from stored data
+        const byteCharacters = atob(personalInfo.resumeData.split(",")[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new File([byteArray], personalInfo.resumeFileName, {
+          type: personalInfo.resumeType,
+        });
+
+        // Create FileList and assign to input
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+
+        fieldsFound++;
+      }
+    });
+  }
   // Fill select dropdowns
   selectMappings.forEach((mapping) => {
     if (mapping.value) {
